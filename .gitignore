@@ -4,6 +4,10 @@ obj/
 *.suo
 *.cache
 *.log
-appsettings.*.json
-!appsettings.json
+*.pdb
+.env
+*.env
+appsettings.Local.json
 .vs/
+.idea/
+.vscode/settings.json
