@@ -44,17 +44,16 @@ public class AihrlyDbContext : DbContext
 
         // Note -> TeamMember (author)
         modelBuilder.Entity<ApplicationNote>()
-            .HasOne<TeamMember>()
+            .HasOne(n => n.CreatedByUser)
             .WithMany()
             .HasForeignKey(n => n.CreatedBy)
             .OnDelete(DeleteBehavior.Restrict);
 
         // StageHistory → TeamMember (changed_by)
         modelBuilder.Entity<StageHistory>()
-            .HasOne<TeamMember>()
+            .HasOne(h => h.ChangedByUser)
             .WithMany()
             .HasForeignKey(h => h.ChangedBy)
-            .HasPrincipalKey(t => t.Id)
             .OnDelete(DeleteBehavior.Restrict);
 
         // Score attribution FKs

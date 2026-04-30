@@ -18,12 +18,12 @@ public class Application
 
     public int? InterviewScore { get; set; }
     public string? InterviewComment { get; set; }
-    public string? InterviewUpdatedBy { get; set; }
+    public Guid? InterviewUpdatedBy { get; set; }
     public DateTime? InterviewUpdatedAt { get; set; }
 
     public int? AssessmentScore { get; set; }
     public string? AssessmentComment { get; set; }
-    public string? AssessmentUpdatedBy { get; set; }
+    public Guid? AssessmentUpdatedBy { get; set; }
     public DateTime? AssessmentUpdatedAt { get; set; }
 
     public DateTime CreatedAt { get; set; }
