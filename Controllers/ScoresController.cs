@@ -24,10 +24,10 @@ public class ScoresController : ControllerBase
     {
         var application = await _context.Applications.FindAsync(id);
         if (application == null)
-            return NotFound($"Application with id '{id}' not found.");
+            return Problem(title: "Not Found", detail: $"Application with id '{id}' not found.", statusCode: 404);
 
         if (dto.Score < 1 || dto.Score > 5)
-            return Problem("Score must be between 1 and 5.", statusCode: 400);
+            return Problem(title: "Validation Error", detail: "Score must be between 1 and 5.", statusCode: 400);
 
         var teamMemberId = Guid.Parse(Request.Headers["X-Team-Member-Id"].ToString());
 
@@ -55,10 +55,10 @@ public class ScoresController : ControllerBase
     {
         var application = await _context.Applications.FindAsync(id);
         if (application == null)
-            return NotFound($"Application with id '{id}' not found.");
+            return Problem(title: "Not Found", detail: $"Application with id '{id}' not found.", statusCode: 404);
 
         if (dto.Score < 1 || dto.Score > 5)
-            return Problem("Score must be between 1 and 5.", statusCode: 400);
+            return Problem(title: "Validation Error", detail: "Score must be between 1 and 5.", statusCode: 400);
 
         var teamMemberId = Guid.Parse(Request.Headers["X-Team-Member-Id"].ToString());
 
@@ -86,10 +86,10 @@ public class ScoresController : ControllerBase
     {
         var application = await _context.Applications.FindAsync(id);
         if (application == null)
-            return NotFound($"Application with id '{id}' not found.");
+            return Problem(title: "Not Found", detail: $"Application with id '{id}' not found.", statusCode: 404);
 
         if (dto.Score < 1 || dto.Score > 5)
-            return Problem("Score must be between 1 and 5.", statusCode: 400);
+            return Problem(title: "Validation Error", detail: "Score must be between 1 and 5.", statusCode: 400);
 
         var teamMemberId = Guid.Parse(Request.Headers["X-Team-Member-Id"].ToString());
 

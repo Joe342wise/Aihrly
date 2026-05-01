@@ -26,13 +26,13 @@ public class ApplicationsController : ControllerBase
     {
         var job = await _context.Jobs.FindAsync(jobId);
         if (job == null)
-            return Problem($"Job with id '{jobId}' not found.", statusCode: 404);
+            return Problem(title: "Not Found", detail: $"Job with id '{jobId}' not found.", statusCode: 404);
 
         if (string.IsNullOrWhiteSpace(dto.CandidateName))
-            return Problem("Candidate name is required.", statusCode: 400);
+            return Problem(title: "Validation Error", detail: "Candidate name is required.", statusCode: 400);
 
         if (string.IsNullOrWhiteSpace(dto.CandidateEmail))
-            return Problem("Candidate email is required.", statusCode: 400);
+            return Problem(title: "Validation Error", detail: "Candidate email is required.", statusCode: 400);
 
         var application = new Application
         {
@@ -52,7 +52,7 @@ public class ApplicationsController : ControllerBase
         }
         catch (DbUpdateException)
         {
-            return Problem("A candidate with this email has already applied to this job.", statusCode: 409);
+            return Problem(title: "Conflict", detail: "A candidate with this email has already applied to this job.", statusCode: 409);
         }
 
         var result = new ApplicationDto
@@ -73,7 +73,7 @@ public class ApplicationsController : ControllerBase
     {
         var job = await _context.Jobs.FindAsync(jobId);
         if (job == null)
-            return Problem($"Job with id '{jobId}' not found.", statusCode: 404);
+            return Problem(title: "Not Found", detail: $"Job with id '{jobId}' not found.", statusCode: 404);
 
         var query = _context.Applications.Where(a => a.JobId == jobId);
 
@@ -102,7 +102,7 @@ public class ApplicationsController : ControllerBase
     {
         var application = await _context.Applications.FindAsync(id);
         if (application == null)
-            return NotFound($"Application with id '{id}' not found.");
+            return Problem(title: "Not Found", detail: $"Application with id '{id}' not found.", statusCode: 404);
 
         var notes = await _context.ApplicationNotes
             .Include(n => n.CreatedByUser)
@@ -159,10 +159,10 @@ public class ApplicationsController : ControllerBase
     {
         var application = await _context.Applications.FindAsync(id);
         if (application == null)
-            return NotFound($"Application with id '{id}' not found.");
+            return Problem(title: "Not Found", detail: $"Application with id '{id}' not found.", statusCode: 404);
 
         if (!StageTransitionValidator.IsValidTransition(application.Stage, dto.TargetStage, out var errorMessage))
-            return Problem(errorMessage, statusCode: 400);
+            return Problem(title: "Invalid Stage Transition", detail: errorMessage, statusCode: 400);
 
         var teamMemberId = Request.Headers["X-Team-Member-Id"].ToString();
         var teamMember = await _context.TeamMembers.FindAsync(Guid.Parse(teamMemberId));

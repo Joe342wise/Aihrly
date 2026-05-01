@@ -26,14 +26,13 @@ public class NotesController : ControllerBase
     {
         var application = await _context.Applications.FindAsync(id);
         if (application == null)
-            return NotFound($"Application with id '{id}' not found.");
+            return Problem(title: "Not Found", detail: $"Application with id '{id}' not found.", statusCode: 404);
 
         var validTypes = new[] { "general", "screening", "interview", "reference_check", "red_flag" };
         if (!validTypes.Contains(dto.Type))
-            return Problem($"Invalid note type '{dto.Type}'. Valid types: {string.Join(", ", validTypes)}.", statusCode: 400);
-
+            return Problem(title: "Validation Error", detail: $"Invalid note type '{dto.Type}'. Valid types: {string.Join(", ", validTypes)}.", statusCode: 400);
         if (string.IsNullOrWhiteSpace(dto.Description))
-            return Problem("Description is required.", statusCode: 400);
+            return Problem(title: "Validation Error", detail: "Description is required.", statusCode: 400);
 
         var teamMemberId = Request.Headers["X-Team-Member-Id"].ToString();
 
@@ -70,7 +69,7 @@ public class NotesController : ControllerBase
     {
         var application = await _context.Applications.FindAsync(id);
         if (application == null)
-            return NotFound($"Application with id '{id}' not found.");
+            return Problem(title: "Not Found", detail: $"Application with id '{id}' not found.", statusCode: 404);
 
         var notes = await _context.ApplicationNotes
             .Include(n => n.CreatedByUser)

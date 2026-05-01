@@ -22,10 +22,10 @@ public class JobsController : ControllerBase
     public async Task<IActionResult> CreateJob([FromBody] CreateJobDto dto)
     {
         if (string.IsNullOrWhiteSpace(dto.Title))
-            return Problem("Title is required.", statusCode: 400);
+            return Problem(title: "Validation Error", detail: "Title is required.", statusCode: 400);
 
         if (string.IsNullOrWhiteSpace(dto.Description))
-            return Problem("Description is required.", statusCode: 400);
+            return Problem(title: "Validation Error", detail: "Description is required.", statusCode: 400);
 
         var job = new Job
         {
@@ -89,7 +89,7 @@ public class JobsController : ControllerBase
     {
         var job = await _context.Jobs.FindAsync(id);
         if (job == null)
-            return NotFound($"Job with id '{id}' not found.");
+            return Problem(title: "Not Found", detail: $"Job with id '{id}' not found.", statusCode: 404);
 
         var dto = new JobDto
         {
