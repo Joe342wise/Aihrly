@@ -53,6 +53,30 @@ dotnet run
 
 The API starts at `https://localhost:5001` (or the port shown in output). OpenAPI docs are available at `/openapi/v1.json` in development mode.
 
+### 5. Run migrations (after starting the database)
+
+```bash
+dotnet ef database update
+```
+
+This creates all tables, indexes, foreign keys, and seeds 3 team members.
+
+## Running with Docker
+
+If you prefer Docker, a `docker-compose.yml` is included that brings up the API, PostgreSQL, and Redis:
+
+```bash
+docker compose up -d
+```
+
+After the services start, run migrations against the containerized database:
+
+```bash
+docker compose exec api dotnet ef database update
+```
+
+The API is available at `http://localhost:5000`.
+
 ## Running Tests
 
 ```bash
@@ -162,6 +186,9 @@ Aihrly/
 - **Score history tracking:** A separate `ApplicationScore` table with one row per update would provide full audit history of who scored what and when.
 - **Input validation with FluentValidation:** Moving validation logic out of controllers into dedicated validator classes for cleaner separation and easier testing.
 - **AutoMapper for DTO mapping:** Reduce boilerplate in controller mapping code, especially for `ApplicationProfileDto` which maps 15+ fields.
-- **Docker Compose setup:** A `docker-compose.yml` that brings up PostgreSQL + Redis + the API for a one-command local setup.
-- **GitHub Actions CI:** Automated test runs on every push.
+- **Input validation with FluentValidation:** Moving validation logic out of controllers into dedicated validator classes for cleaner separation and easier testing.
 - **Job closure endpoint:** Ability to close a job (`PUT /api/jobs/{id}` to set status to `closed`).
+
+## Branch Naming
+
+This project uses `master` as the default branch. GitHub Actions CI is configured to run on both `master` and `main` for compatibility.
