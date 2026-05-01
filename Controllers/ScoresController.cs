@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Aihrly.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/applications/{id}/scores")]
 public class ScoresController : ControllerBase
 {
     private readonly AihrlyDbContext _context;

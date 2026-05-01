@@ -12,7 +12,10 @@ var connectionString = $"Host={Environment.GetEnvironmentVariable("POSTGRES_HOST
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddDbContext<AihrlyDbContext>(options => options.UseNpgsql(connectionString));
+if (Environment.GetEnvironmentVariable("TESTING") != "true")
+{
+    builder.Services.AddDbContext<AihrlyDbContext>(options => options.UseNpgsql(connectionString));
+}
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
@@ -30,3 +33,5 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }
