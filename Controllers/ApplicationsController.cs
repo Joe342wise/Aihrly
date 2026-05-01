@@ -28,11 +28,8 @@ public class ApplicationsController : ControllerBase
         if (job == null)
             return Problem(title: "Not Found", detail: $"Job with id '{jobId}' not found.", statusCode: 404);
 
-        if (string.IsNullOrWhiteSpace(dto.CandidateName))
-            return Problem(title: "Validation Error", detail: "Candidate name is required.", statusCode: 400);
-
-        if (string.IsNullOrWhiteSpace(dto.CandidateEmail))
-            return Problem(title: "Validation Error", detail: "Candidate email is required.", statusCode: 400);
+        if (!ModelState.IsValid)
+            return Problem(title: "Validation Error", detail: string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)), statusCode: 400);
 
         var application = new Application
         {
