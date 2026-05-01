@@ -1,0 +1,112 @@
+using System;
+using Aihrly.Data;
+using Aihrly.Dtos;
+using Aihrly.Filters;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Aihrly.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class ScoresController : ControllerBase
+{
+    private readonly AihrlyDbContext _context;
+
+    public ScoresController(AihrlyDbContext context)
+    {
+        _context = context;
+    }
+
+    // PUT /api/applications/{id}/scores/culture-fit
+    [HttpPut("culture-fit")]
+    [TeamMemberHeaderFilter]
+    public async Task<IActionResult> UpdateCultureFit(Guid id, [FromBody] UpdateScoreDto dto)
+    {
+        var application = await _context.Applications.FindAsync(id);
+        if (application == null)
+            return NotFound($"Application with id '{id}' not found.");
+
+        if (dto.Score < 1 || dto.Score > 5)
+            return Problem("Score must be between 1 and 5.", statusCode: 400);
+
+        var teamMemberId = Guid.Parse(Request.Headers["X-Team-Member-Id"].ToString());
+
+        application.CultureFitScore = dto.Score;
+        application.CultureFitComment = dto.Comment;
+        application.CultureFitUpdatedBy = teamMemberId;
+        application.CultureFitUpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            dimension = "culture-fit",
+            score = application.CultureFitScore,
+            comment = application.CultureFitComment,
+            updatedBy = teamMemberId,
+            updatedAt = application.CultureFitUpdatedAt,
+        });
+    }
+
+    // PUT /api/applications/{id}/scores/interview
+    [HttpPut("interview")]
+    [TeamMemberHeaderFilter]
+    public async Task<IActionResult> UpdateInterview(Guid id, [FromBody] UpdateScoreDto dto)
+    {
+        var application = await _context.Applications.FindAsync(id);
+        if (application == null)
+            return NotFound($"Application with id '{id}' not found.");
+
+        if (dto.Score < 1 || dto.Score > 5)
+            return Problem("Score must be between 1 and 5.", statusCode: 400);
+
+        var teamMemberId = Guid.Parse(Request.Headers["X-Team-Member-Id"].ToString());
+
+        application.InterviewScore = dto.Score;
+        application.InterviewComment = dto.Comment;
+        application.InterviewUpdatedBy = teamMemberId;
+        application.InterviewUpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            dimension = "interview",
+            score = application.InterviewScore,
+            comment = application.InterviewComment,
+            updatedBy = teamMemberId,
+            updatedAt = application.InterviewUpdatedAt,
+        });
+    }
+
+    // PUT /api/applications/{id}/scores/assessment
+    [HttpPut("assessment")]
+    [TeamMemberHeaderFilter]
+    public async Task<IActionResult> UpdateAssessment(Guid id, [FromBody] UpdateScoreDto dto)
+    {
+        var application = await _context.Applications.FindAsync(id);
+        if (application == null)
+            return NotFound($"Application with id '{id}' not found.");
+
+        if (dto.Score < 1 || dto.Score > 5)
+            return Problem("Score must be between 1 and 5.", statusCode: 400);
+
+        var teamMemberId = Guid.Parse(Request.Headers["X-Team-Member-Id"].ToString());
+
+        application.AssessmentScore = dto.Score;
+        application.AssessmentComment = dto.Comment;
+        application.AssessmentUpdatedBy = teamMemberId;
+        application.AssessmentUpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            dimension = "assessment",
+            score = application.AssessmentScore,
+            comment = application.AssessmentComment,
+            updatedBy = teamMemberId,
+            updatedAt = application.AssessmentUpdatedAt,
+        });
+    }
+}
