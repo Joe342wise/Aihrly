@@ -1,5 +1,6 @@
 using Aihrly.Data;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 DotNetEnv.Env.Load();
 
@@ -15,6 +16,13 @@ var connectionString = $"Host={Environment.GetEnvironmentVariable("POSTGRES_HOST
 if (Environment.GetEnvironmentVariable("TESTING") != "true")
 {
     builder.Services.AddDbContext<AihrlyDbContext>(options => options.UseNpgsql(connectionString));
+
+    var redisUrl = Environment.GetEnvironmentVariable("REDIS_URL") ?? "redis://localhost:6379";
+    builder.Services.AddSingleton<IConnectionMultiplexer>(ConnectionMultiplexer.Connect(redisUrl));
+}
+else
+{
+    builder.Services.AddDbContext<AihrlyDbContext>(options => { });
 }
 
 builder.Services.AddControllers();

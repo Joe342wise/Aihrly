@@ -6,6 +6,7 @@ using Aihrly.Models;
 using Aihrly.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 namespace Aihrly.Controllers;
 
@@ -14,10 +15,12 @@ namespace Aihrly.Controllers;
 public class ApplicationsController : ControllerBase
 {
     private readonly AihrlyDbContext _context;
+    private readonly IDatabase? _cache;
 
-    public ApplicationsController(AihrlyDbContext context)
+    public ApplicationsController(AihrlyDbContext context, IConnectionMultiplexer? redis = null)
     {
         _context = context;
+        _cache = redis?.GetDatabase();
     }
 
     // POST /api/jobs/{jobId}/applications
@@ -97,6 +100,14 @@ public class ApplicationsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetApplication(Guid id)
     {
+        if (_cache != null)
+        {
+            var cachedData = await _cache.StringGetAsync($"application:{id}");
+            if (!cachedData.IsNullOrEmpty)
+            {
+                return Ok(System.Text.Json.JsonSerializer.Deserialize<ApplicationProfileDto>(cachedData.ToString()));
+            }
+        }
         var application = await _context.Applications.FindAsync(id);
         if (application == null)
             return Problem(title: "Not Found", detail: $"Application with id '{id}' not found.", statusCode: 404);
@@ -146,6 +157,11 @@ public class ApplicationsController : ControllerBase
             }).ToList(),
         };
 
+        if (_cache != null)
+        {
+            await _cache.StringSetAsync($"application:{id}", System.Text.Json.JsonSerializer.Serialize(profile), TimeSpan.FromSeconds(60));
+        }
+
         return Ok(profile);
     }
 
@@ -179,6 +195,11 @@ public class ApplicationsController : ControllerBase
 
         _context.StageHistories.Add(stageHistory);
         await _context.SaveChangesAsync();
+
+        if (_cache != null)
+        {
+            await _cache.KeyDeleteAsync($"application:{id}");
+        }
 
         return Ok(new
         {

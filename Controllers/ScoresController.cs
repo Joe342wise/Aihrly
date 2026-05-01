@@ -3,6 +3,7 @@ using Aihrly.Data;
 using Aihrly.Dtos;
 using Aihrly.Filters;
 using Microsoft.AspNetCore.Mvc;
+using StackExchange.Redis;
 
 namespace Aihrly.Controllers;
 
@@ -11,10 +12,12 @@ namespace Aihrly.Controllers;
 public class ScoresController : ControllerBase
 {
     private readonly AihrlyDbContext _context;
+    private readonly IDatabase? _cache;
 
-    public ScoresController(AihrlyDbContext context)
+    public ScoresController(AihrlyDbContext context, IConnectionMultiplexer? redis = null)
     {
         _context = context;
+        _cache = redis?.GetDatabase();
     }
 
     // PUT /api/applications/{id}/scores/culture-fit
@@ -37,6 +40,11 @@ public class ScoresController : ControllerBase
         application.CultureFitUpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
+
+        if (_cache != null)
+        {
+            await _cache.KeyDeleteAsync($"application:{id}");
+        }
 
         return Ok(new
         {
@@ -69,6 +77,11 @@ public class ScoresController : ControllerBase
 
         await _context.SaveChangesAsync();
 
+        if (_cache != null)
+        {
+            await _cache.KeyDeleteAsync($"application:{id}");
+        }
+
         return Ok(new
         {
             dimension = "interview",
@@ -99,6 +112,11 @@ public class ScoresController : ControllerBase
         application.AssessmentUpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
+
+        if (_cache != null)
+        {
+            await _cache.KeyDeleteAsync($"application:{id}");
+        }
 
         return Ok(new
         {

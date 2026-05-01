@@ -5,6 +5,7 @@ using Aihrly.Filters;
 using Aihrly.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 namespace Aihrly.Controllers;
 
@@ -13,10 +14,12 @@ namespace Aihrly.Controllers;
 public class NotesController : ControllerBase
 {
     private readonly AihrlyDbContext _context;
+    private readonly IDatabase? _cache;
 
-    public NotesController(AihrlyDbContext context)
+    public NotesController(AihrlyDbContext context, IConnectionMultiplexer? redis = null)
     {
         _context = context;
+        _cache = redis?.GetDatabase();
     }
 
     // POST /api/applications/{id}/notes
@@ -48,6 +51,11 @@ public class NotesController : ControllerBase
 
         _context.ApplicationNotes.Add(note);
         await _context.SaveChangesAsync();
+
+        if (_cache != null)
+        {
+            await _cache.KeyDeleteAsync($"application:{id}");
+        }
 
         var teamMember = await _context.TeamMembers.FindAsync(Guid.Parse(teamMemberId));
 
