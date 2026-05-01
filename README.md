@@ -7,6 +7,7 @@ An ASP.NET Core Web API for the Aihrly Applicant Tracking System — the team-si
 - **Runtime:** .NET 10 (ASP.NET Core)
 - **Database:** PostgreSQL via EF Core 10 + Npgsql
 - **Testing:** xUnit, SQLite in-memory for integration tests
+- **Caching:** Redis
 - **Configuration:** DotNetEnv (`.env` files)
 - **API Documentation:** OpenAPI / Swagger
 
@@ -16,6 +17,7 @@ An ASP.NET Core Web API for the Aihrly Applicant Tracking System — the team-si
 
 - .NET 10 SDK
 - PostgreSQL (running locally or via Docker)
+- Redis (running locally or via Docker)
 
 ### 1. Set up PostgreSQL
 
@@ -26,7 +28,17 @@ docker run --name postgres -e POSTGRES_HOST_AUTH_METHOD=trust -p 5432:5432 -d po
 docker exec postgres createdb -U postgres aihrly
 ```
 
-### 2. Configure environment
+### 2. Set up Redis
+
+If you're using Docker:
+
+```bash
+docker run --name redis -p 6379:6379 -d redis:7
+```
+
+Or install Redis locally (e.g., `sudo apt install redis-server` on Ubuntu).
+
+### 3. Configure environment
 
 Create a `.env` file at the project root:
 
@@ -35,9 +47,10 @@ POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
 POSTGRES_DB=aihrly
 POSTGRES_USER=postgres
+REDIS_URL=redis://localhost:6379
 ```
 
-### 3. Run migrations
+### 4. Run migrations
 
 ```bash
 dotnet ef database update
@@ -45,21 +58,13 @@ dotnet ef database update
 
 This creates all tables, indexes, foreign keys, and seeds 3 team members.
 
-### 4. Run the API
+### 5. Run the API
 
 ```bash
 dotnet run
 ```
 
-The API starts at `https://localhost:5001` (or the port shown in output). OpenAPI docs are available at `/openapi/v1.json` in development mode.
-
-### 5. Run migrations (after starting the database)
-
-```bash
-dotnet ef database update
-```
-
-This creates all tables, indexes, foreign keys, and seeds 3 team members.
+The API starts at `http://localhost:5000` (or `https://localhost:5001`). OpenAPI docs are available at `/openapi/v1.json` in development mode.
 
 ## Running with Docker
 
@@ -164,13 +169,17 @@ Invalid transitions return `400` with a descriptive error message.
 ```
 Aihrly/
 ├── Controllers/          # API endpoints
-├── Data/                 # DbContext and migrations
+├── Data/                 # DbContext
 ├── Dtos/                 # Request/response DTOs
 ├── Filters/              # Action filters (X-Team-Member-Id validation)
+├── Migrations/           # EF Core migrations
 ├── Models/               # Entity classes
 ├── Services/             # Business logic (stage transition rules)
 ├── Tests/                # Unit and integration tests
-└── Program.cs            # Application entry point and DI setup
+├── Program.cs            # Application entry point and DI setup
+├── Dockerfile            # Container definition
+├── docker-compose.yml    # Local infra (API + Postgres + Redis)
+└── .github/workflows/    # CI pipeline
 ```
 
 ## Assumptions
@@ -186,7 +195,6 @@ Aihrly/
 - **Score history tracking:** A separate `ApplicationScore` table with one row per update would provide full audit history of who scored what and when.
 - **Input validation with FluentValidation:** Moving validation logic out of controllers into dedicated validator classes for cleaner separation and easier testing.
 - **AutoMapper for DTO mapping:** Reduce boilerplate in controller mapping code, especially for `ApplicationProfileDto` which maps 15+ fields.
-- **Input validation with FluentValidation:** Moving validation logic out of controllers into dedicated validator classes for cleaner separation and easier testing.
 - **Job closure endpoint:** Ability to close a job (`PUT /api/jobs/{id}` to set status to `closed`).
 
 ## Branch Naming
